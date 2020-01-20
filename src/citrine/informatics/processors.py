@@ -28,6 +28,17 @@ class Processor(Module):
             'Enumerated': EnumeratedProcessor
         }[data['config']['type']]
 
+    def resource_type(self) -> str:
+        """Get the access control resource type of this resource."""
+        return self.__class__.__name__.upper()
+
+    def as_entity_dict(self) -> dict:
+        """Return an access control entity representation of this resource."""
+        return {
+            "type": self.resource_type(),
+            "id": str(self.uid)
+        }
+
 
 class GridProcessor(Serializable['GridProcessor'], Processor):
     """Generates samples from the outer product of finite dimensions, then scans over them.
