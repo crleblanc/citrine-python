@@ -70,10 +70,10 @@ class ProductDesignSpace(Resource['ProductDesignSpace'], DesignSpace):
                  description: str,
                  dimensions: List[Dimension],
                  session: Session = Session()):
-        self.name: str = name
-        self.description: str = description
-        self.dimensions: List[Dimension] = dimensions
-        self.session: Session = session
+        self.name = name  # type: str
+        self.description = description  # type: str
+        self.dimensions = dimensions  # type: List[Dimension]
+        self.session = session  # type: Session
 
     def _post_dump(self, data: dict) -> dict:
         data['display_name'] = data['config']['name']
@@ -130,11 +130,11 @@ class EnumeratedDesignSpace(Resource['EnumeratedDesignSpace'], DesignSpace):
                  descriptors: List[Descriptor],
                  data: List[Mapping[str, Any]],
                  session: Session = Session()):
-        self.name: str = name
-        self.description: str = description
-        self.descriptors: List[Descriptor] = descriptors
-        self.data: List[Mapping[str, Any]] = data
-        self.session: Session = session
+        self.name = name  # type: str
+        self.description = description  # type: str
+        self.descriptors = descriptors  # type: List[Descriptor]
+        self.data = data  # type: List[Mapping[str, Any]]
+        self.session = session  # type: Session
 
     def _post_dump(self, data: dict) -> dict:
         data['display_name'] = data['config']['name']

@@ -42,4 +42,4 @@ class PredictorReport(Serializable['PredictorReport'], Report):
     def __init__(self, status: str, json: dict, session: Optional[Session] = None):
         self.status = status
         self.json: dict = json
-        self.session: Optional[Session] = session
+        self.session = session  # type: Optional[Session]

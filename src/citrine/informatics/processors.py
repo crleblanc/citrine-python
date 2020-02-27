@@ -73,10 +73,10 @@ class GridProcessor(Serializable['GridProcessor'], Processor):
                  description: str,
                  grid_sizes: Mapping[str, int],
                  session: Optional[Session] = None):
-        self.name: str = name
-        self.description: str = description
-        self.grid_sizes: Mapping[str, int] = grid_sizes
-        self.session: Optional[Session] = session
+        self.name = name  # type: str
+        self.description = description  # type: str
+        self.grid_sizes = grid_sizes  # type: Mapping[str, int]
+        self.session = session  # type: Optional[Session]
 
     def _post_dump(self, data: dict) -> dict:
         data['display_name'] = data['config']['name']
@@ -124,10 +124,10 @@ class EnumeratedProcessor(Serializable['EnumeratedProcessor'], Processor):
                  description: str,
                  max_size: Optional[int] = None,
                  session: Optional[Session] = None):
-        self.name: str = name
-        self.description: str = description
-        self.max_size: int = max_size or 2 ** 31 - 1  # = 2147483647 (max 32-bit integer)
-        self.session: Optional[Session] = session
+        self.name = name  # type: str
+        self.description = description  # type: str
+        self.max_size = max_size or 2 ** 31 - 1    # type: int # = 2147483647 (max 32-bit integer)
+        self.session = session  # type: Optional[Session]
 
     def _post_dump(self, data: dict) -> dict:
         data['display_name'] = data['config']['name']

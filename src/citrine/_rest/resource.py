@@ -7,8 +7,8 @@ Self = TypeVar('Self', bound='Resource')
 class Resource(Serializable[Self]):
     """Abstract class for representing individual REST resource."""
 
-    _path_template: str = NotImplemented
-    _response_key: Optional[str] = None
+    _path_template = NotImplemented  # type: str
+    _response_key = None  # type: Optional[str]
 
     def resource_type(self) -> str:
         """Get the access control resource type of this resource."""

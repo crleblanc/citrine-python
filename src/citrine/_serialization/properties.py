@@ -26,7 +26,7 @@ class Property(typing.Generic[DeserializedType, SerializedType]):
                  deserializable: bool = True,
                  default: typing.Optional[DeserializedType] = None):
         self.serialization_path = serialization_path
-        self._key: str = '__' + str(uuid.uuid4())  # Make this object key human readable
+        self._key = '__' + str(uuid.uuid4())    # type: str # Make this object key human readable
         self.serializable: bool = serializable
         self.deserializable: bool = deserializable
         self.default: typing.Optional[DeserializedType] = default

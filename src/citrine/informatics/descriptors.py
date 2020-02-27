@@ -57,10 +57,10 @@ class RealDescriptor(Serializable['RealDescriptor'], Descriptor):
                  lower_bound: float,
                  upper_bound: float,
                  units: str = ''):
-        self.key: str = key
-        self.lower_bound: float = lower_bound
-        self.upper_bound: float = upper_bound
-        self.units: Optional[str] = units
+        self.key = key  # type: str
+        self.lower_bound = lower_bound  # type: float
+        self.upper_bound = upper_bound  # type: float
+        self.units = units  # type: Optional[str]
 
 
 class InorganicDescriptor(Serializable['InorganicDescriptor'], Descriptor):
@@ -90,7 +90,7 @@ class InorganicDescriptor(Serializable['InorganicDescriptor'], Descriptor):
             return False
 
     def __init__(self, key: str, threshold: float = 1.0):
-        self.key: str = key
+        self.key = key  # type: str
         self.threshold = threshold
 
 
@@ -122,5 +122,5 @@ class CategoricalDescriptor(Serializable['CategoricalDescriptor'], Descriptor):
             return False
 
     def __init__(self, key: str, categories: List[str]):
-        self.key: str = key
-        self.categories: List[str] = categories
+        self.key = key  # type: str
+        self.categories = categories  # type: List[str]

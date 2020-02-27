@@ -42,7 +42,7 @@ class User(Resource['User']):
         self.position: str = position
         self.screen_name: str = screen_name
         self.is_admin: bool = is_admin
-        self.session: Optional[Session] = session
+        self.session = session  # type: Optional[Session]
 
     def __str__(self):
         return '<User {!r}>'.format(self.screen_name)

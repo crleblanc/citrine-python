@@ -64,7 +64,7 @@ class ScalarRangeConstraint(Serializable['ScalarRangeConstraint'], Constraint):
         self.min = min
         self.min_inclusive = min_inclusive
         self.max_inclusive = max_inclusive
-        self.session: Optional[Session] = session
+        self.session = session  # type: Optional[Session]
 
     def __str__(self):
         return '<ScalarRangeConstraint {!r}>'.format(self.descriptor_key)

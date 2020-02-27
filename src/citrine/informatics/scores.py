@@ -60,12 +60,12 @@ class LIScore(Serializable['LIScore'], Score):
                  baselines: List[float],
                  constraints: Optional[List[Constraint]] = None,
                  session: Optional[Session] = None):
-        self.name: str = name
-        self.description: str = description
-        self.objectives: List[Objective] = objectives
-        self.baselines: List[float] = baselines
-        self.constraints: List[Constraint] = constraints or []
-        self.session: Optional[Session] = session
+        self.name = name  # type: str
+        self.description = description  # type: str
+        self.objectives = objectives  # type: List[Objective]
+        self.baselines = baselines  # type: List[float]
+        self.constraints = constraints or []  # type: List[Constraint]
+        self.session = session  # type: Optional[Session]
 
     def __str__(self):
         return '<LIScore {!r}>'.format(self.name)

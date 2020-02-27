@@ -31,10 +31,10 @@ class Session(requests.Session):
                  host: str = 'citrine.io',
                  port: Optional[str] = None):
         super().__init__()
-        self.scheme: str = scheme
+        self.scheme = scheme  # type: str
         self.authority = ':'.join([host, port or ''])
-        self.refresh_token: str = refresh_token
-        self.access_token: Optional[str] = None
+        self.refresh_token = refresh_token  # type: str
+        self.access_token = None  # type: Optional[str]
         self.access_token_expiration: datetime = datetime.utcnow()
 
         # Following scheme:[//authority]path[?query][#fragment] (https://en.wikipedia.org/wiki/URL)

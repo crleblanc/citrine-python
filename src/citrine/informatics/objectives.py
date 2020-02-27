@@ -58,7 +58,7 @@ class ScalarMaxObjective(Serializable['ScalarMaxObjective'], Objective):
         self.descriptor_key = descriptor_key
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.session: Optional[Session] = session
+        self.session = session  # type: Optional[Session]
 
     def __str__(self):
         return '<ScalarMaxObjective {!r}>'.format(self.descriptor_key)
@@ -92,7 +92,7 @@ class ScalarMinObjective(Serializable['ScalarMinObjective'], Objective):
         self.descriptor_key = descriptor_key
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.session: Optional[Session] = session
+        self.session = session  # type: Optional[Session]
 
     def __str__(self):
         return '<ScalarMinObjective {!r}>'.format(self.descriptor_key)
