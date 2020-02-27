@@ -18,7 +18,7 @@ import requests
 
 # Choose a 5 second buffer so that there's no chance of the access token
 # expiring during the check for expiration
-EXPIRATION_BUFFER_MILLIS: timedelta = timedelta(milliseconds=5000)
+EXPIRATION_BUFFER_MILLIS = timedelta(milliseconds=5000)  # type: timedelta
 logger = getLogger(__name__)
 
 

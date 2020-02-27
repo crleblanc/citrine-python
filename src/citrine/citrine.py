@@ -16,7 +16,7 @@ class Citrine:
                  scheme: str = DEFAULT_SCHEME,
                  host: str = DEFAULT_HOST,
                  port: Optional[str] = None):
-        self.session: Session = Session(api_key, scheme, host, port)
+        self.session = Session(api_key, scheme, host, port)  # type: Session
 
     @property
     def projects(self) -> ProjectCollection:

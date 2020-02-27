@@ -33,7 +33,7 @@ def valid_serialization_output(valid_data):
 
 def test_simple_deserialization(valid_data):
     """Ensure a deserialized DesignWorkflow looks sane."""
-    workflow: DesignWorkflow = DesignWorkflow.build(valid_data)
+    workflow = DesignWorkflow.build(valid_data)  # type: DesignWorkflow
     assert workflow.design_space_id == UUID(valid_data['config']['design_space_id'])
     assert workflow.processor_id == UUID(valid_data['config']['processor_id'])
     assert workflow.predictor_id == UUID(valid_data['config']['predictor_id'])

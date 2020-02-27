@@ -27,7 +27,7 @@ def test_simple_deserialization(valid_data):
 
 def test_polymorphic_deserialization(valid_data):
     """Ensure a polymorphically deserialized RealDescriptor looks sane."""
-    descriptor: RealDescriptor = Descriptor.build(valid_data)
+    descriptor = Descriptor.build(valid_data)  # type: RealDescriptor
     assert descriptor.key == 'alpha'
     assert descriptor.units == ''
     assert descriptor.lower_bound == 5.0
