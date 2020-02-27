@@ -4,8 +4,8 @@ from citrine.resources.project import ProjectCollection
 from citrine.resources.user import UserCollection
 
 
-DEFAULT_HOST: str = 'citrine.io'
-DEFAULT_SCHEME: str = 'https'
+DEFAULT_HOST = 'citrine.io'  # type: str
+DEFAULT_SCHEME = 'https'     # type: str
 
 
 class Citrine:
