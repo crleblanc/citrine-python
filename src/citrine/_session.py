@@ -93,6 +93,7 @@ class Session(requests.Session):
             # scheme: str = 'https',
             # host: str = 'citrine.io',
             # port: Optional[str] = None):
+            print('Connection Error, creating a new session')
             self.__init__(self.refresh_token, self.scheme, self.host, self.port)
             response = super().request(method, uri, **kwargs)
 
