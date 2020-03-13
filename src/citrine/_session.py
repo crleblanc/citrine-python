@@ -35,6 +35,8 @@ class Session(requests.Session):
                  port: Optional[str] = None):
         super().__init__()
         self.scheme: str = scheme
+        self.host = host
+        self.port = port
         self.authority = ':'.join([host, port or ''])
         self.refresh_token: str = refresh_token
         self.access_token: Optional[str] = None
@@ -82,25 +84,17 @@ class Session(requests.Session):
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        tries = 0
-        while tries < 10:
-            tries += 1
-            try_msg = 'Tried {} times.'.format(tries)
-
-            try:
-                response = super().request(method, uri, **kwargs)
-                msg = 'Received server error from citrine, trying again. {}'.format(try_msg)
-                if response.status_code >= 500:
-                    logger.warn(msg)
-                else:
-                    break
-            except ConnectionError as e:
-                if tries < 10:
-                    logger.debug('Connection reset by server, trying again. ')
-                else:
-                    raise e
-
-            time.sleep(tries)
+        try:
+            response = super().request(method, uri, **kwargs)
+        except (ConnectionError, ConnectionResetError):
+            logger.debug('Connection Error, creating a new session')
+            # # super().__init__()
+            # refresh_token: str = environ.get('CITRINE_API_TOKEN'),
+            # scheme: str = 'https',
+            # host: str = 'citrine.io',
+            # port: Optional[str] = None):
+            self.__init__(self.refresh_token, self.scheme, self.host, self.port)
+            response = super().request(method, uri, **kwargs)
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
