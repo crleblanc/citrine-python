@@ -71,7 +71,7 @@ class Session(requests.Session):
     def _refresh_access_token(self) -> None:
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
-        response = super().request(
+        response = self.request(
             'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
@@ -96,12 +96,12 @@ class Session(requests.Session):
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        response = super().request(method, uri, **kwargs)
+        response = self.request(method, uri, **kwargs)
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
                 self._refresh_access_token()
-                response = super().request(method, uri, **kwargs)
+                response = self.request(method, uri, **kwargs)
         except ValueError:
             # Ignore ValueErrors thrown by attempting to decode json bodies. This
             # might occur if we get a 401 response without a JSON body
