@@ -59,7 +59,7 @@ class Session(requests.Session):
     def _refresh_access_token(self) -> None:
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
-        response = super().request(
+        response = self._request_with_active_session(
             'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
@@ -67,6 +67,18 @@ class Session(requests.Session):
         self.access_token_expiration = datetime.utcfromtimestamp(
             jwt.decode(self.access_token, verify=False)['exp']
         )
+
+    def _request_with_active_session(self, method, uri, **kwargs):
+        """Execute a request, reinitializing the session if there is a connection error"""
+        try:
+            response = super().request(method, uri, **kwargs)
+        except (ConnectionError, ConnectionResetError):
+            logger.debug('Connection Error, creating a new session')
+            print('Connection Error, creating a new session')
+            self.__init__(self.refresh_token, self.scheme, self.host, self.port)
+            response = super().request(method, uri, **kwargs)
+
+        return response
 
     def checked_request(self, method: str, path: str,
                         version: str = 'v1', **kwargs) -> requests.Response:
@@ -84,23 +96,12 @@ class Session(requests.Session):
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        try:
-            response = super().request(method, uri, **kwargs)
-        except (ConnectionError, ConnectionResetError):
-            logger.debug('Connection Error, creating a new session')
-            # # super().__init__()
-            # refresh_token: str = environ.get('CITRINE_API_TOKEN'),
-            # scheme: str = 'https',
-            # host: str = 'citrine.io',
-            # port: Optional[str] = None):
-            print('Connection Error, creating a new session')
-            self.__init__(self.refresh_token, self.scheme, self.host, self.port)
-            response = super().request(method, uri, **kwargs)
+        response = self._request_with_active_session(method, uri, **kwargs)
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
                 self._refresh_access_token()
-                response = super().request(method, uri, **kwargs)
+                response = self._request_with_active_session(method, uri, **kwargs)
         except ValueError:
             # Ignore ValueErrors thrown by attempting to decode json bodies. This
             # might occur if we get a 401 response without a JSON body
