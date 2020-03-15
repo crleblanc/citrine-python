@@ -4,7 +4,6 @@ from logging import getLogger
 from datetime import datetime, timedelta
 
 from requests import Response
-from requests.exceptions import ConnectionError
 from json.decoder import JSONDecodeError
 from urllib3.util.retry import Retry
 
@@ -18,7 +17,6 @@ from citrine.exceptions import (
 
 import jwt
 import requests
-import time
 
 # Choose a 5 second buffer so that there's no chance of the access token
 # expiring during the check for expiration
