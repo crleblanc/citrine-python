@@ -36,8 +36,6 @@ class Session(requests.Session):
                  port: Optional[str] = None):
         super().__init__()
         self.scheme: str = scheme
-        # self.host = host
-        # self.port = port
         self.authority = ':'.join([host, port or ''])
         self.refresh_token: str = refresh_token
         self.access_token: Optional[str] = None
@@ -58,7 +56,7 @@ class Session(requests.Session):
                         read=3,
                         status=3,
                         backoff_factor=0.1,
-                        status_forcelist=[500, 502, 504])
+                        status_forcelist=[500, 502, 504, 520, 521, 522, 524])
         adapter = requests.adapters.HTTPAdapter(max_retries=retries)
         self.mount('https://', adapter)
         self.mount('http://', adapter)
