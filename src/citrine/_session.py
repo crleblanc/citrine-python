@@ -50,13 +50,14 @@ class Session(requests.Session):
         self.s3_addressing_style = 'auto'
 
         # Use a custom adapter so we can use retries with control over fine grained details.  Retries happen by default
-        # with codes [503, 413, 429], use status_forcelist to add *additional* codes to retry on.
-        retries = Retry(total=5,
-                        connect=3,
-                        read=3,
-                        status=3,
-                        backoff_factor=0.1,
-                        status_forcelist=[500, 502, 504, 520, 521, 522, 524])
+        # with codes [503, 413, 429], use status_forcelist to add *additional* codes to retry on.  We're using this to
+        # retry on several custom CloudFlare errors.
+        retries = Retry(total=10,
+                        connect=5,
+                        read=5,
+                        status=5,
+                        backoff_factor=0.25,
+                        status_forcelist=[500, 502, 504, 520, 521, 522, 524, 527])
         adapter = requests.adapters.HTTPAdapter(max_retries=retries)
         self.mount('https://', adapter)
         self.mount('http://', adapter)
