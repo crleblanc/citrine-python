@@ -90,8 +90,15 @@ class Session(requests.Session):
     def _refresh_access_token(self) -> None:
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
-        response = self.request(
-            'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
+
+        try:
+            response = self.request(
+                'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
+        except Exception as err:
+            logger.info('DEBUG refresh token exception %s', err)
+            response = self.request(
+                'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
+
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
         self.access_token = response.json()['access_token']
@@ -119,7 +126,7 @@ class Session(requests.Session):
             response = self.request(method, uri, **kwargs)
         # except requests.exceptions.ConnectionError:
         except Exception as err:
-            logger.info('DEBUG exception %s', err)
+            logger.info('DEBUG checked request exception %s', err)
             response = self.request(method, uri, **kwargs)
 
         try:
