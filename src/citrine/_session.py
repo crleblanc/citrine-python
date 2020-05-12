@@ -65,12 +65,18 @@ class Session(requests.Session):
         # Custom adapter so we can use custom retry parameters. The default HTTP status
         # codes for retries are [503, 413, 429]. We're using status_force list to add
         # additional codes to retry on, focusing on specific CloudFlare 5XX errors.
-        retries = ConnectionRetry(total=10,
-                                  connect=5,
-                                  read=5,
-                                  status=5,
-                                  backoff_factor=0.25,
-                                  status_forcelist=[500, 502, 504, 520, 521, 522, 524, 527])
+        # retries = ConnectionRetry(total=10,
+        #                           connect=5,
+        #                           read=5,
+        #                           status=5,
+        #                           backoff_factor=0.25,
+        #                           status_forcelist=[500, 502, 504, 520, 521, 522, 524, 527])
+        retries = Retry(total=10,
+                        connect=5,
+                        read=5,
+                        status=5,
+                        backoff_factor=0.25,
+                        status_forcelist=[500, 502, 504, 520, 521, 522, 524, 527])
         adapter = requests.adapters.HTTPAdapter(max_retries=retries)
         self.mount('https://', adapter)
         self.mount('http://', adapter)
@@ -109,7 +115,10 @@ class Session(requests.Session):
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        response = self.request(method, uri, **kwargs)
+        try:
+            response = self.request(method, uri, **kwargs)
+        except requests.exceptions.ConnectionError:
+            response = self.request(method, uri, **kwargs)
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
