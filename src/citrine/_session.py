@@ -117,7 +117,9 @@ class Session(requests.Session):
 
         try:
             response = self.request(method, uri, **kwargs)
-        except requests.exceptions.ConnectionError:
+        # except requests.exceptions.ConnectionError:
+        except Exception as err:
+            logger.info('DEBUG exception %s', err)
             response = self.request(method, uri, **kwargs)
 
         try:
