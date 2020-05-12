@@ -30,7 +30,13 @@ class ConnectionRetry(Retry):
         """ Extend the Retry super class to include Requests ConnectionError as a retry-able
         connection error.
         """
-        return super()._is_connection_error(err) or isinstance(err, ConnectionError)
+
+        # While normally overloading a private method is a bad idea, this method is very simple
+        # (returns a bool) and we're just extending the existing method.  The risk of upstream
+        # changes causing a breakage is relatively low.  The superclass does not retry if a
+        # Connection error is raised.  We want to retry in this case.
+        conn_err = super()._is_connection_error(err)
+        return conn_err or isinstance(err, ConnectionError) or isinstance(err, ConnectionResetError)
 
 
 class Session(requests.Session):
@@ -103,7 +109,7 @@ class Session(requests.Session):
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        response = self.request(method, uri, **kwargs)
+        response = self.request(method, uri, **kwargs)am
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
