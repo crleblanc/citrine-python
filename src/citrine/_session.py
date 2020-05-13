@@ -91,13 +91,9 @@ class Session(requests.Session):
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
 
-        try:
-            response = self.request(
-                'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
-        except Exception as err:
-            logger.info('DEBUG refresh token exception %s', err)
-            response = self.request(
-                'POST', self._versioned_base_url() + 'tokens/refresh', json=data)
+        # TODO: unify, call checked_request but without calling this function.
+        response = self.checked_request(
+            'POST', self._versioned_base_url() + 'tokens/refresh', refresh_expired_token=False, json=data)
 
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
@@ -107,9 +103,10 @@ class Session(requests.Session):
         )
 
     def checked_request(self, method: str, path: str,
-                        version: str = 'v1', **kwargs) -> requests.Response:
+                        version: str = 'v1',
+                        refresh_expired_token: bool = True, **kwargs) -> requests.Response:
         """Check response status code and throw an exception if relevant."""
-        if self._is_access_token_expired():
+        if refresh_expired_token and self._is_access_token_expired():
             self._refresh_access_token()
         uri = self._versioned_base_url(version) + path.lstrip('/')
 
@@ -124,9 +121,9 @@ class Session(requests.Session):
 
         try:
             response = self.request(method, uri, **kwargs)
-        # except requests.exceptions.ConnectionError:
-        except Exception as err:
-            logger.info('DEBUG checked request exception %s', err)
+        # except Exception as err:
+        except requests.exceptions.ConnectionError:
+            logger.error('ConnectionError seen, retrying request')
             response = self.request(method, uri, **kwargs)
 
         try:
