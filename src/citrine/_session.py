@@ -91,9 +91,8 @@ class Session(requests.Session):
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
 
-        # TODO: unify, call checked_request but without calling this function.
         response = self.checked_request(
-            'POST', self._versioned_base_url() + 'tokens/refresh', refresh_expired_token=False, json=data)
+            'POST', 'tokens/refresh', refresh_expired_token=False, json=data)
 
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
