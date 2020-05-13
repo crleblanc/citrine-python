@@ -4,7 +4,6 @@ from logging import getLogger
 from datetime import datetime, timedelta
 
 from requests import Response
-from requests.exceptions import ConnectionError
 from json.decoder import JSONDecodeError
 from urllib3.util.retry import Retry
 
@@ -23,20 +22,6 @@ import requests
 # expiring during the check for expiration
 EXPIRATION_BUFFER_MILLIS: timedelta = timedelta(milliseconds=5000)
 logger = getLogger(__name__)
-
-
-class ConnectionRetry(Retry):
-    def _is_connection_error(self, err):
-        """ Extend the Retry super class to include Requests ConnectionError as a retry-able
-        connection error.
-        """
-
-        # While normally overloading a private method is a bad idea, this method is very simple
-        # (returns a bool) and we're just extending the existing method.  The risk of upstream
-        # changes causing a breakage is relatively low.  The superclass does not retry if a
-        # Connection error is raised.  We want to retry in this case.
-        conn_err = super()._is_connection_error(err)
-        return conn_err or isinstance(err, ConnectionError) or isinstance(err, ConnectionResetError)
 
 
 class Session(requests.Session):
@@ -65,12 +50,6 @@ class Session(requests.Session):
         # Custom adapter so we can use custom retry parameters. The default HTTP status
         # codes for retries are [503, 413, 429]. We're using status_force list to add
         # additional codes to retry on, focusing on specific CloudFlare 5XX errors.
-        # retries = ConnectionRetry(total=10,
-        #                           connect=5,
-        #                           read=5,
-        #                           status=5,
-        #                           backoff_factor=0.25,
-        #                           status_forcelist=[500, 502, 504, 520, 521, 522, 524, 527])
         retries = Retry(total=10,
                         connect=5,
                         read=5,
@@ -91,8 +70,7 @@ class Session(requests.Session):
         """Optionally refresh our access token (if the previous one is about to expire)."""
         data = {'refresh_token': self.refresh_token}
 
-        response = self.checked_request(
-            'POST', 'tokens/refresh', refresh_expired_token=False, json=data)
+        response = self._request_with_retry('POST', self._versioned_base_url() + 'tokens/refresh', json=data)
 
         if response.status_code != 200:
             raise UnauthorizedRefreshToken()
@@ -101,29 +79,35 @@ class Session(requests.Session):
             jwt.decode(self.access_token, verify=False)['exp']
         )
 
-    def checked_request(self, method: str, path: str,
-                        version: str = 'v1',
-                        refresh_expired_token: bool = True, **kwargs) -> requests.Response:
-        """Check response status code and throw an exception if relevant."""
-        if refresh_expired_token and self._is_access_token_expired():
-            self._refresh_access_token()
-        uri = self._versioned_base_url(version) + path.lstrip('/')
+    def _request_with_retry(self, method, uri, **kwargs):
+        """Wrap the Request with a try/except statement to handle ConnectionError exceptions"""
+        try:
+            response = self.request(method, uri, **kwargs)
+        except requests.exceptions.ConnectionError:
+            logger.warning('requests.exceptions.ConnectionError seen, retrying request')
+            response = self.request(method, uri, **kwargs)
 
+        return response
+
+    def checked_request(self, method: str, path: str,
+                        version: str = 'v1', **kwargs) -> requests.Response:
+        """Check response status code and throw an exception if relevant."""
         logger.debug('BEGIN request details:')
         logger.debug('\tmethod: {}'.format(method))
         logger.debug('\tpath: {}'.format(path))
-        logger.debug('\turi: {}'.format(uri))
         logger.debug('\tversion: {}'.format(version))
+
+        if self._is_access_token_expired():
+            self._refresh_access_token()
+        uri = self._versioned_base_url(version) + path.lstrip('/')
+
+        logger.debug('\turi: {}'.format(uri))
+
         for k, v in kwargs.items():
             logger.debug('\t{}: {}'.format(k, v))
         logger.debug('END request details.')
 
-        try:
-            response = self.request(method, uri, **kwargs)
-        # except Exception as err:
-        except requests.exceptions.ConnectionError:
-            logger.error('ConnectionError seen, retrying request')
-            response = self.request(method, uri, **kwargs)
+        response = self._request_with_retry(method, uri, **kwargs)
 
         try:
             if response.status_code == 401 and response.json().get("reason") == "invalid-token":
