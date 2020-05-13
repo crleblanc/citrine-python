@@ -80,7 +80,9 @@ class Session(requests.Session):
         )
 
     def _request_with_retry(self, method, uri, **kwargs):
-        """Wrap the Request with a try/except statement to handle ConnectionError exceptions"""
+        """Wrap a request with a try/except to retry when ConnectionErrors are seen"""
+
+        # The urllib3 Retry object does not handle this situation so retry manually"
         try:
             response = self.request(method, uri, **kwargs)
         except requests.exceptions.ConnectionError:
